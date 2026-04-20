@@ -86,7 +86,7 @@ Config stored at `~/.apisnap/config.toml`:
 ```toml
 [cerebras]
 api_key = "sk-xxx"
-model = "gpt-oss-120b"
+model = "qwen-3-235b-a22b-instruct-2507"
 
 [defaults]
 output_dir = "./tests"

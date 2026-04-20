@@ -10,7 +10,7 @@ from apisnap.ai.prompts import get_generate_tests_prompt, get_refine_schema_prom
 
 
 CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
-DEFAULT_MODEL = "gpt-oss-120b"
+DEFAULT_MODEL = "qwen-3-235b-a22b-instruct-2507"
 
 
 class CerebrasClient:

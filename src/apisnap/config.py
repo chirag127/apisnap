@@ -30,7 +30,7 @@ def _default_config() -> dict:
     return {
         "cerebras": {
             "api_key": "",
-            "model": "gpt-oss-120b",
+            "model": "qwen-3-235b-a22b-instruct-2507",
         },
         "defaults": {
             "output_dir": "./tests",
@@ -48,6 +48,9 @@ def save_config(config: dict) -> None:
 
 def get_api_key() -> str:
     """Get Cerebras API key."""
+    env_key = os.environ.get("CEREBRAS_API_KEY")
+    if env_key:
+        return env_key
     config = load_config()
     return config.get("cerebras", {}).get("api_key", "")
 
@@ -63,8 +66,11 @@ def set_api_key(key: str) -> None:
 
 def get_model() -> str:
     """Get Cerebras model name."""
+    env_model = os.environ.get("CEREBRAS_MODEL")
+    if env_model:
+        return env_model
     config = load_config()
-    return config.get("cerebras", {}).get("model", "gpt-oss-120b")
+    return config.get("cerebras", {}).get("model", "qwen-3-235b-a22b-instruct-2507")
 
 
 def set_model(model: str) -> None:
@@ -115,7 +121,7 @@ def show_config() -> str:
     lines = [
         "[cerebras]",
         f'api_key = "{masked_key}"',
-        f'model = "{config.get("cerebras", {}).get("model", "gpt-oss-120b")}"',
+        f'model = "{config.get("cerebras", {}).get("model", "qwen-3-235b-a22b-instruct-2507")}"',
         "",
         "[defaults]",
         f'output_dir = "{config.get("defaults", {}).get("output_dir", "./tests")}"',

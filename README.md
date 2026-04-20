@@ -120,20 +120,20 @@ flowchart TB
 ```mermaid
 flowchart LR
     External[External API<br/>weather, prices, sports] -->|HTTP Request| Workflow[GitHub Actions<br/>schedule: cron]
-    
+
     Workflow -->|Fetch & Transform| Commit[Commit JSON files]
-    
+
     Commit --> Repo[GitHub Repository<br/>data/chords.json<br/>data/prices.json<br/>public/items.json]
-    
+
     Repo -->|Serve| Pages[Public JSON APIs]
-    
+
     subgraph Pages["Hosting Options"]
         direction TB
         GH[GitHub Pages<br/>user.github.io/repo]
         CF[Cloudflare Pages<br/>repo.pages.dev]
         Custom[Custom Domain<br/>api.example.com]
     end
-    
+
     GH --> URLs[Public JSON API URLs<br/>https://user.github.io/repo/data/chords.json<br/>https://repo.pages.dev/data/prices.json<br/>https://api.example.com/data/items.json]
     CF --> URLs
     Custom --> URLs
@@ -144,21 +144,21 @@ flowchart LR
 ```mermaid
 flowchart TB
     Input[Input: https://github.com/user/guitar-chords-repo] --> Step1[Step 1: Fetch Repo Tree<br/>GET /repos/{owner}/{repo}/git/trees?recursive=1]
-    
+
     Step1 --> Step2[Step 2: Scan Generator Scripts<br/>.github/workflows/*.yml → parse<br/>scripts/*.py → extract cron, fetch URLs]
-    
+
     Step2 --> Step2a[workflow: cron: 0 */6<br/>output: data/*.json]
     Step2 --> Step2b[scripts: fetch_chords.py<br/>from external API]
-    
+
     Step2a --> Step3[Step 3: Find JSON Data Files<br/>data/*.json, public/*.json<br/>api/*.json, output/*.json]
     Step2b --> Step3
-    
+
     Step3 --> Step4[Step 4: Infer Schema<br/>Analyzes JSON structure<br/>Infers types]
-    
+
     Step4 --> Step5[Step 5: Detect Public URL<br/>CNAME → custom domain<br/>wrangler.toml → Cloudflare Pages<br/>docs/ → GitHub Pages]
-    
+
     Step5 --> Step6[Step 6: Build RouteManifest<br/>method: GET, path: /data/chords.json<br/>public_url: https://...<br/>confidence: 0.95]
-    
+
     Step6 --> Output[RouteManifest → Ai → Tests]
 ```
 
@@ -253,21 +253,21 @@ flowchart TB
 ```mermaid
 flowchart TB
     Input[RouteManifest] --> Check{Confidence Check<br/>confidence >= 0.8?}
-    
+
     Check -->|Yes| Pass1[Pass 1: Schema Refinement]
     Check -->|No| LowConf[Use with lower confidence]
-    
+
     Pass1 --> Pass2[Pass 2: Test Generation]
     LowConf --> Pass2
-    
+
     Pass2 --> BuildPrompt[Build prompt with:<br/>- Method, Path, URL<br/>- Auth requirements<br/>- Response schema<br/>- Source type<br/>- Framework target]
-    
-    BuildPrompt --> Ai[Cerebras Ai Api<br/>Model: gpt-oss-120b]
-    
+
+    BuildPrompt --> Ai[Cerebras Ai Api<br/>Model: qwen-3-235b-a22b-instruct-2507]
+
     Ai --> Prompt[Prompt: "Generate tests<br/>for category: happy path,<br/>auth failure, schema..."]
-    
+
     Prompt --> Writer[Framework Writer<br/>pytest / unittest / jest<br/>mocha / vitest / rspec<br/>restassured / httpx]
-    
+
     Writer --> Output[Test Files<br/>test_api_users.py<br/>test_api_products.py<br/>...]
 ```
 
@@ -283,7 +283,7 @@ classDiagram
         +str source_mode
         +str detected_at
     }
-    
+
     class Route {
         +str method
         +str path
@@ -299,7 +299,7 @@ classDiagram
         +Optional~str~ refresh_schedule
         +Optional~str~ public_url
     }
-    
+
     class Param {
         +str name
         +str location
@@ -307,7 +307,7 @@ classDiagram
         +bool required
         +Optional~str~ description
     }
-    
+
     RouteManifest --> Route : routes
     Route --> Param : params
 ```
@@ -404,7 +404,7 @@ Config file location: `~/.apisnap/config.toml`
 ```toml
 [cerebras]
 api_key = "sk-xxxx"                    # Your Cerebras API key
-model = "gpt-oss-120b"                 # AI model to use
+model = "qwen-3-235b-a22b-instruct-2507"                 # AI model to use
 
 [defaults]
 output_dir = "./tests"                  # Default output directory

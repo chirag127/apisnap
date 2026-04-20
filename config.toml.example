@@ -1,0 +1,7 @@
+[cerebras]
+api_key = "your-api-key-here"
+model = "qwen-3-235b-a22b-instruct-2507"
+
+[defaults]
+output_dir = "./tests"
+format = "pytest"

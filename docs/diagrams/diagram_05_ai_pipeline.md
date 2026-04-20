@@ -12,12 +12,12 @@ flowchart LR
 
     subgraph Pass1["Pass 1: Schema Refinement"]
         CC{"confidence < 0.8?"}
-        AI1["Cerebras AI<br/>gpt-oss-120b"]
+        AI1["Cerebras AI<br/>qwen-3-235b-a22b-instruct-2507"]
         Refine["Refine Schema"]
     end
 
     subgraph Pass2["Pass 2: Test Generation"]
-        AI2["Cerebras AI<br/>gpt-oss-120b"]
+        AI2["Cerebras AI<br/>qwen-3-235b-a22b-instruct-2507"]
         Prompt["Build Prompt"]
         Gen["Generate Tests"]
     end
@@ -63,6 +63,6 @@ flowchart LR
 
 ## Model Configuration
 
-- Default model: `gpt-oss-120b`
+- Default model: `qwen-3-235b-a22b-instruct-2507`
 - API: `https://api.cerebras.ai/v1`
 - Temperature: 0.2 (tests), 0.1 (schema refinement)

@@ -72,42 +72,68 @@ class FastAPIScanner(BaseScanner):
     def _extract_routes(self, content: str, filename: str) -> list[Route]:
         """Extract routes from file content."""
         routes = []
-        path_params = []
 
         for line in content.split("\n"):
             stripped = line.strip()
 
             for method in METHODS:
-                # Match @app.method or @router.method patterns
-                pattern = rf"@(?:app|router)\.{method.lower()}\(['\"])(.+?)\1"
+                method_lower = method.lower()
+
+                pattern = rf'@(?:app|router)\.{method_lower}\("([^"]+)"\)'
                 match = re.match(pattern, stripped)
                 if match:
-                    path = match.group(2)
+                    path = match.group(1)
                     route = Route(
                         method=method,
                         path=path,
                         source="scanned",
                         confidence=0.9,
                     )
-
-                    # Extract path parameters
                     params = self._extract_params(path)
                     route.params = params
                     routes.append(route)
+                    continue
 
-                # Match APIRouter patterns
-                pattern = rf"@(?:api_router|APIRouter)\.{method.lower()}\(['\"])(.+?)\1"
+                pattern = rf"@(?:\bapp\b|\brouter\b)\.{method_lower}\('([^']+)'\)"
                 match = re.match(pattern, stripped)
                 if match:
-                    path = match.group(2)
+                    path = match.group(1)
                     route = Route(
                         method=method,
                         path=path,
                         source="scanned",
                         confidence=0.9,
                     )
+                    params = self._extract_params(path)
+                    route.params = params
+                    routes.append(route)
+                    continue
 
-                    # Extract path parameters
+                pattern = rf'@(?:api_router|APIRouter)\.{method_lower}\("([^"]+)"\)'
+                match = re.match(pattern, stripped)
+                if match:
+                    path = match.group(1)
+                    route = Route(
+                        method=method,
+                        path=path,
+                        source="scanned",
+                        confidence=0.9,
+                    )
+                    params = self._extract_params(path)
+                    route.params = params
+                    routes.append(route)
+                    continue
+
+                pattern = rf"@(?:api_router|APIRouter)\.{method_lower}\('([^']+)'\)"
+                match = re.match(pattern, stripped)
+                if match:
+                    path = match.group(1)
+                    route = Route(
+                        method=method,
+                        path=path,
+                        source="scanned",
+                        confidence=0.9,
+                    )
                     params = self._extract_params(path)
                     route.params = params
                     routes.append(route)

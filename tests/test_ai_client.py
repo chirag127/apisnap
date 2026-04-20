@@ -10,14 +10,14 @@ from apisnap.schema import Route
 class TestCerebrasClient:
     """Tests for CerebrasClient."""
 
-    @patch("openai.OpenAI")
+    @patch("apisnap.ai.client.OpenAI")
     def test_client_initialization(self, mock_openai):
         """Test client initialization."""
         client = CerebrasClient("test-key")
 
-        assert client.model == "gpt-oss-120b"
+        assert client.model == "qwen-3-235b-a22b-instruct-2507"
 
-    @patch("openai.OpenAI")
+    @patch("apisnap.ai.client.OpenAI")
     def test_generate_tests(self, mock_openai):
         """Test test generation."""
         mock_client = MagicMock()
@@ -39,7 +39,7 @@ class TestCerebrasClient:
         assert result == "test code"
         assert mock_client.chat.completions.create.called
 
-    @patch("openai.OpenAI")
+    @patch("apisnap.ai.client.OpenAI")
     def test_refine_schema(self, mock_openai):
         """Test schema refinement."""
         mock_client = MagicMock()

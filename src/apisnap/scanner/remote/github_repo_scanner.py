@@ -46,7 +46,8 @@ class GitHubRepoScanner(BaseScanner):
 
     def can_handle(self, path: str) -> bool:
         """Check if path is a GitHub repository URL."""
-        return "github.com" in path.lower()
+        path_lower = path.lower()
+        return "github.com" in path_lower or "/" in path_lower
 
     def scan(self, url: str, **kwargs) -> RouteManifest:
         """Scan a GitHub repository for JSON data files.
@@ -206,20 +207,25 @@ class GitHubRepoScanner(BaseScanner):
             cron_schedule = None
             output_files = []
 
-            # Extract cron schedule
-            if "on" in workflow:
-                on_config = workflow["on"]
+            # Extract cron schedule - handle both "on" and True (YAML boolean)
+            # YAML parses "on:" as boolean True
+            on_config = workflow.get("on") or workflow.get(True)
+            if on_config:
                 if isinstance(on_config, dict):
                     if "schedule" in on_config:
                         schedules = on_config["schedule"]
                         if isinstance(schedules, list) and schedules:
-                            cron_schedule = schedules[0].get("cron", "")
+                            cron = schedules[0].get("cron", "")
+                            # Handle YAML single-quoted strings which preserve quotes
+                            if cron and cron.startswith("'") and cron.endswith("'"):
+                                cron = cron[1:-1]
+                            cron_schedule = cron
                         elif isinstance(schedules, dict):
                             cron_schedule = schedules.get("cron", "")
 
-                # Extract repository dispatch triggers
-                if "repository_dispatch" in on_config:
-                    output_files.append("repository dispatch")
+                    # Extract repository dispatch triggers
+                    if "repository_dispatch" in on_config:
+                        output_files.append("repository dispatch")
 
             # Find file operations (checkout, write-file)
             jobs = workflow.get("jobs", {})
