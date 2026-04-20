@@ -216,8 +216,7 @@ Before generating tests, you must configure the Cerebras API key.
 ```bash
 apisnap config --api-key YOUR_CEREBRAS_API_KEY
 ```
-
-![alt text](image.png)
+![alt text](image-2.png)
 
 ### Alternative: Interactive Configuration
 
@@ -339,14 +338,11 @@ apisnap version
 ```mermaid
 flowchart TB
     Input[GitHub Repo URL] --> Parse[Parse owner/repo]
-    Parse --> Tree[Fetch Repo Tree
-    API: /repos/{owner}/{repo}/git/trees]
-    Tree --> Workflows[Scan .github/workflows/]
-    Workflows --> JSON[Find JSON Files
-    data/, public/, api/]
+    Parse --> Tree[Fetch Repo Tree]
+    Tree --> Workflows[Scan .github/workflows]
+    Workflows --> JSON[Find JSON Files]
     JSON --> Schema[Infer Schema]
-    Schema --> URL[Detect Public URL
-    GitHub Pages / Cloudflare Pages]
+    Schema --> URL[Detect Public URL]
     URL --> Manifest[Build RouteManifest]
 ```
 
@@ -362,7 +358,8 @@ apisnap scan --url https://github.com/owner/repo
 apisnap scan --url https://github.com/chirag127/fii-dii-tracker
 ```
 
-![alt text](image-1.png)
+![alt text](image-3.png)
+
 
 ### Mode 2: Local Source Code
 
