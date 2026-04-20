@@ -195,60 +195,47 @@ flowchart TB
         V1[Show version information]
     end
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          APISNAP CLI COMMANDS                               │
-└─────────────────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ apisnap config                                                              │
-│                                                                             │
-│ First-time setup. Prompts for and stores Cerebras API key.                 │
-│ Stores config at: ~/.apisnap/config.toml                                    │
-│                                                                             │
-│ Options:                                                                    │
-│   --api-key TEXT    Set Cerebras API key                                    │
-│   --show            Show current configuration                             │
-│   --format TEXT     Default test format                                    │
-│   --output-dir TEXT Default output directory                               │
-└─────────────────────────────────────────────────────────────────────────────┘
+### CLI Commands Reference
 
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ apisnap scan [PATH] [OPTIONS]                                               │
-│                                                                             │
-│ Main command. All input modes:                                              │
-│                                                                             │
-│   PATH    Path to scan (default: current directory)                        │
-│                                                                             │
-│ Options:                                                                    │
-│   --url TEXT          Remote URL (GitHub repo, OpenAPI JSON, deployed URL) │
-│   --format TEXT       Test framework [pytest|jest|mocha|vitest|...]        │
-│   --output TEXT       Output directory [default: ./tests]                  │
-│   --framework TEXT    Force framework detection                            │
-│   --mode TEXT         Force discovery mode [source|openapi|json|...]       │
-│   --dry-run           Show routes without generating tests                 │
-│   --base-url TEXT     Base URL for test requests                           │
-│   --verbose           Detailed progress                                     │
-│   --no-ai            Print manifest as JSON, skip test generation          │
-└─────────────────────────────────────────────────────────────────────────────┘
+#### apisnap config
+First-time setup. Prompts for and stores Cerebras API key. Stores config at: `~/.apisnap/config.toml`
 
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ apisnap list [PATH]                                                        │
-│                                                                             │
-│ Show discovered routes in a pretty-printed table.                          │
-└─────────────────────────────────────────────────────────────────────────────┘
+| Option | Description |
+|--------|-------------|
+| `--api-key TEXT` | Set Cerebras API key |
+| `--show` | Show current configuration |
+| `--format TEXT` | Default test format |
+| `--output-dir TEXT` | Default output directory |
 
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ apisnap version                                                            │
-│                                                                             │
-│ Show version information.                                                  │
-└─────────────────────────────────────────────────────────────────────────────┘
+#### apisnap scan [PATH] [OPTIONS]
+Main command. All input modes.
+
+| Option | Description |
+|--------|-------------|
+| `PATH` | Path to scan (default: current directory) |
+| `--url TEXT` | Remote URL (GitHub repo, OpenAPI JSON, deployed URL) |
+| `--format TEXT` | Test framework [pytest\|jest\|mocha\|vitest\|...] |
+| `--output TEXT` | Output directory [default: ./tests] |
+| `--framework TEXT` | Force framework detection |
+| `--mode TEXT` | Force discovery mode [source\|openapi\|json\|...] |
+| `--dry-run` | Show routes without generating tests |
+| `--base-url TEXT` | Base URL for test requests |
+| `--verbose` | Detailed progress |
+| `--no-ai` | Print manifest as JSON, skip test generation |
+
+#### apisnap list [PATH]
+Show discovered routes in a pretty-printed table.
+
+#### apisnap version
+Show version information.
 ```
 
 ### AI test generation pipeline
 
 ```mermaid
 flowchart TB
-    Input[RouteManifest] --> Check{Confidence Check<br/>confidence >= 0.8?}
+    Input[RouteManifest] --> Check{Confidence Check: confidence >= 0.8?}
 
     Check -->|Yes| Pass1[Pass 1: Schema Refinement]
     Check -->|No| LowConf[Use with lower confidence]
