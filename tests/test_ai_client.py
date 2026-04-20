@@ -15,7 +15,7 @@ class TestCerebrasClient:
         """Test client initialization."""
         client = CerebrasClient("test-key")
 
-        assert client.model == "qwen-3-235b-a22b-instruct-2507"
+        assert client.model == "gpt-oss-120b"
 
     @patch("openai.OpenAI")
     def test_generate_tests(self, mock_openai):

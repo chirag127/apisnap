@@ -180,11 +180,3 @@ class SchemaInferrer:
             "type": "array",
             "items": merged,
         }
-
-    def _merge_schemas(self, existing: list[dict], new: dict) -> dict:
-        """Merge two schemas."""
-        if not existing:
-            return new
-
-        all_schemas = existing + [new]
-        return self._merge_schemas(all_schemas)

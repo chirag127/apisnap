@@ -37,8 +37,10 @@ class RestAssuredWriter(BaseWriter):
     def _generate_route_test(self, route: Route, manifest: RouteManifest) -> str:
         """Generate test for a route."""
         base_url = manifest.base_url or "http://localhost"
+        class_name = self._class_name(route.path)
 
-        code = f'''package com.example.api.tests;
+        code = (
+            """package com.example.api.tests;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -46,67 +48,91 @@ import org.testng.annotations.Test;
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
-public class {self._class_name(route.path)} {{
+public class """
+            + class_name
+            + ''' {
 
-    static {{
-        RestAssured.baseURI = "{base_url}";
-    }}
+    static {
+        RestAssured.baseURI = "'''
+            + base_url
+            + """";
+    }
 
     @Test
-    public void testHappyPath() {{
+    public void testHappyPath() {
         given()
             .contentType("application/json")
         .when()
-            .{route.method.lower()}({repr(route.path)})
+            ."""
+            + route.method.lower()
+            + '''("'''
+            + route.path
+            + """")
         .then()
             .statusCode(anyOf(is(200), is(201)))
             .contentType(containsString("application/json"));
-    }}
+    }
 
     @Test
-    public void testSchemaValidation() {{
+    public void testSchemaValidation() {
         Response response = given()
             .contentType("application/json")
         .when()
-            .{route.method.lower()}({repr(route.path)});
+            ."""
+            + route.method.lower()
+            + '''("'''
+            + route.path
+            + """");
         
-        if (response.getStatusCode() == 200) {{
-            // Schema validation
+        if (response.getStatusCode() == 200) {
             response.then().body("$", notNullValue());
-        }}
-    }}
+        }
+    }
 
     @Test
-    public void testEmptyResponse() {{
+    public void testEmptyResponse() {
         given()
             .contentType("application/json")
         .when()
-            .{route.method.lower()}({repr(route.path)})
+            ."""
+            + route.method.lower()
+            + '''("'''
+            + route.path
+            + """")
         .then()
             .body(notNullValue());
-    }}
+    }
 
     @Test
-    public void testContentType() {{
+    public void testContentType() {
         given()
             .contentType("application/json")
         .when()
-            .{route.method.lower()}({repr(route.path)})
+            ."""
+            + route.method.lower()
+            + '''("'''
+            + route.path
+            + """")
         .then()
             .contentType(containsString("application/json"));
-    }}
+    }
 
     @Test
-    public void testNotFound() {{
+    public void testNotFound() {
         given()
             .contentType("application/json")
         .when()
-            .{route.method.lower()}({repr(route.path + "_invalid")})
+            ."""
+            + route.method.lower()
+            + '''("'''
+            + route.path
+            + """_invalid")
         .then()
             .statusCode(anyOf(is(404), is(400)));
-    }}
-}}
-'''
+    }
+}
+"""
+        )
         return code
 
     def _class_name(self, path: str) -> str:
@@ -118,5 +144,5 @@ public class {self._class_name(route.path)} {{
         """Get filename for a route."""
         name = self._class_name(route.path)
         if not name:
-            name = f"RouteTest{index}"
-        return f"{name}.java"
+            name = "RouteTest{0}".format(index)
+        return "{0}.java".format(name)

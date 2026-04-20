@@ -79,199 +79,125 @@ apisnap scan --url https://github.com/user/repo --dry-run
 
 ### How apisnap works — system overview
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           APISNAP SYSTEM OVERVIEW                           │
-└─────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Inputs["Input Modes"]
+        M1[Local Code Scan]
+        M2[OpenAPI URL]
+        M3[JSON URL]
+        M4[Deployed URL]
+        M5[GitHub Repo]
+    end
 
-    ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-    │   Mode 1    │   │   Mode 2    │   │   Mode 3    │   │   Mode 4    │   │   Mode 5    │
-    │ Local Code  │   │  OpenAPI    │   │  JSON URL   │   │  Deployed   │   │    GitHub   │
-    │   Scan      │   │    URL      │   │             │   │     URL     │   │     Repo    │
-    └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘   └──────┬──────┘
-           │                  │                  │                  │                  │
-           ▼                  ▼                  ▼                  ▼                  ▼
-    ┌─────────────────────────────────────────────────────────────────────────────┐
-    │                           AUTO-DETECTOR                                    │
-    │                    Detects framework & input type                         │
-    └─────────────────────────────────┬─────────────────────────────────────────┘
-                                      │
-                                      ▼
-    ┌─────────────────────────────────────────────────────────────────────────────┐
-    │                         ROUTE MANIFEST                                      │
-    │         { routes: [ { method, path, params, auth, schema... } ] }          │
-    └─────────────────────────────────┬─────────────────────────────────────────┘
-                                      │
-                                      ▼
-    ┌─────────────────────────────────────────────────────────────────────────────┐
-    │                         AI ENGINE (Cerebras)                               │
-    │         Two-pass: 1) Schema refinement  2) Test generation                │
-    └─────────────────────────────────┬─────────────────────────────────────────┘
-                                      │
-                                      ▼
-    ┌─────────────────────────────────────────────────────────────────────────────┐
-    │                         TEST WRITERS                                        │
-    │    pytest | unittest | jest | mocha | vitest | restassured | rspec        │
-    └─────────────────────────────────┬─────────────────────────────────────────┘
-                                      │
-                                      ▼
-    ┌─────────────────────────────────────────────────────────────────────────────┐
-    │                           OUTPUT FILES                                      │
-    │                         ./tests/*.py                                        │
-    └─────────────────────────────────────────────────────────────────────────────┘
+    M1 --> Detector
+    M2 --> Detector
+    M3 --> Detector
+    M4 --> Detector
+    M5 --> Detector
+
+    Detector{Auto-Detector} --> Manifest[Route Manifest]
+
+    Manifest --> AI[Ai Engine Cerebras]
+    AI --> Writers[Test Writers]
+
+    subgraph Writers["Test Writers"]
+        W1[pytest]
+        W2[unittest]
+        W3[jest]
+        W4[mocha]
+        W5[vitest]
+        W6[restassured]
+        W7[rspec]
+        W8[httpx]
+    end
+
+    Writers --> Output[Output Files]
+    Output >|./tests/*.|Output
 ```
 
 ### The GitHub-as-database serverless API pattern
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                  GITHUB-AS-DATABASE SERVERLESS API PATTERN                 │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-                          ┌──────────────────┐
-                          │  External API    │
-                          │ (e.g., weather,  │
-                          │  prices, sports) │
-                          └────────┬─────────┘
-                                   │
-                                   │ HTTP Request
-                                   ▼
-                    ┌──────────────────────────────┐
-                    │   GitHub Actions Workflow    │
-                    │   ┌─────────────────────┐   │
-                    │   │  schedule: cron     │   │
-                    │   │  (e.g., every 6h)  │   │
-                    │   └──────────┬──────────┘   │
-                    │              │              │
-                    │              ▼              │
-                    │   ┌─────────────────────┐   │
-                    │   │  Fetch & Transform │   │
-                    │   │  data into JSON     │   │
-                    │   └──────────┬──────────┘   │
-                    └──────────────┼──────────────┘
-                                   │
-                                   │ Commit JSON files
-                                   ▼
-                    ┌──────────────────────────────┐
-                    │    GitHub Repository         │
-                    │                              │
-                    │   ┌─────────────────────┐   │
-                    │   │  data/chords.json   │   │
-                    │   │  data/prices.json   │   │
-                    │   │  public/items.json  │   │
-                    │   └─────────────────────┘   │
-                    └──────────────┬──────────────┘
-                                   │
-                    ┌──────────────┼──────────────┐
-                    │              │              │
-                    ▼              ▼              ▼
-          ┌────────────┐  ┌────────────┐  ┌────────────┐
-          │  GitHub    │  │ Cloudflare │  │   Custom   │
-          │   Pages    │  │   Pages    │  │   Domain   │
-          │.github.io  │  │ .pages.dev │  │            │
-          └─────┬──────┘  └─────┬──────┘  └─────┬──────┘
-                │                │                │
-                ▼                ▼                ▼
-          ┌─────────────────────────────────────────────────────────┐
-          │              Public JSON API URLs                       │
-          │  https://user.github.io/repo/data/chords.json          │
-          │  https://repo.pages.dev/data/prices.json              │
-          │  https://api.example.com/data/items.json               │
-          └─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    External[External API<br/>weather, prices, sports] -->|HTTP Request| Workflow[GitHub Actions<br/>schedule: cron]
+    
+    Workflow -->|Fetch & Transform| Commit[Commit JSON files]
+    
+    Commit --> Repo[GitHub Repository<br/>data/chords.json<br/>data/prices.json<br/>public/items.json]
+    
+    Repo -->|Serve| Pages[Public JSON APIs]
+    
+    subgraph Pages["Hosting Options"]
+        direction TB
+        GH[GitHub Pages<br/>user.github.io/repo]
+        CF[Cloudflare Pages<br/>repo.pages.dev]
+        Custom[Custom Domain<br/>api.example.com]
+    end
+    
+    GH --> URLs[Public JSON API URLs<br/>https://user.github.io/repo/data/chords.json<br/>https://repo.pages.dev/data/prices.json<br/>https://api.example.com/data/items.json]
+    CF --> URLs
+    Custom --> URLs
 ```
 
 ### How apisnap scans a GitHub-as-database repo
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    APISNAP GITHUB REPO SCANNER                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-         Input: https://github.com/user/guitar-chords-repo
-                      │
-                      ▼
-    ┌────────────────────────────────────────┐
-    │   Step 1: Fetch Repo Tree              │
-    │   GET /repos/{owner}/{repo}/git/trees  │
-    │   ?recursive=1                          │
-    └─────────────────┬──────────────────────┘
-                      │
-                      ▼
-    ┌────────────────────────────────────────┐
-    │   Step 2: Scan Generator Scripts      │
-    │                                        │
-    │   .github/workflows/*.yml ──► parse   │
-    │   scripts/*.py ──► extract cron,      │
-    │   fetch URLs, output paths            │
-    └─────────────────┬──────────────────────┘
-                      │
-           ┌──────────┴──────────┐
-           │                     │
-           ▼                     ▼
-    ┌─────────────┐      ┌─────────────────┐
-    │ workflow:   │      │ scripts:        │
-    │ cron: 0 */6 │      │ fetch_chords.py │
-    │ output:     │      │ from external   │
-    │ data/*.json │      │ API             │
-    └─────────────┘      └─────────────────┘
-           │
-           ▼
-    ┌────────────────────────────────────────┐
-    │   Step 3: Find JSON Data Files         │
-    │                                        │
-    │   data/*.json   public/*.json         │
-    │   api/*.json    output/*.json         │
-    └─────────────────┬──────────────────────┘
-                      │
-                      ▼
-    ┌────────────────────────────────────────┐
-    │   Step 4: Infer Schema                 │
-    │                                        │
-    │   { "chords": [ { "name": "...",      │
-    │     "positions": [...], ... } ] }      │
-    │                                        │
-    │   ▼ Infer ▼                           │
-    │                                        │
-    │   { "type": "object",                 │
-    │     "properties": {                   │
-    │       "chords": {                     │
-    │         "type": "array",               │
-    │         "items": { "type": "object" } │
-    │       }                                │
-    │     }                                  │
-    │   }                                    │
-    └─────────────────┬──────────────────────┘
-                      │
-                      ▼
-    ┌────────────────────────────────────────┐
-    │   Step 5: Detect Public URL             │
-    │                                        │
-    │   CNAME ──► custom domain              │
-    │   wrangler.toml ──► Cloudflare Pages   │
-    │   docs/ ──► GitHub Pages              │
-    └─────────────────┬──────────────────────┘
-                      │
-                      ▼
-    ┌────────────────────────────────────────┐
-    │   Step 6: Build RouteManifest          │
-    │                                        │
-    │   Route {                              │
-    │     method: GET                        │
-    │     path: /data/chords.json            │
-    │     public_url: https://...            │
-    │     response_schema: {...}             │
-    │     source: github-data-repo           │
-    │     confidence: 0.95                   │
-    │     refresh_schedule: "0 */6 * * *"    │
-    │   }                                    │
-    └─────────────────┬──────────────────────┘
-                      │
-                      ▼
-              RouteManifest → AI → Tests
+```mermaid
+flowchart TB
+    Input[Input: https://github.com/user/guitar-chords-repo] --> Step1[Step 1: Fetch Repo Tree<br/>GET /repos/{owner}/{repo}/git/trees?recursive=1]
+    
+    Step1 --> Step2[Step 2: Scan Generator Scripts<br/>.github/workflows/*.yml → parse<br/>scripts/*.py → extract cron, fetch URLs]
+    
+    Step2 --> Step2a[workflow: cron: 0 */6<br/>output: data/*.json]
+    Step2 --> Step2b[scripts: fetch_chords.py<br/>from external API]
+    
+    Step2a --> Step3[Step 3: Find JSON Data Files<br/>data/*.json, public/*.json<br/>api/*.json, output/*.json]
+    Step2b --> Step3
+    
+    Step3 --> Step4[Step 4: Infer Schema<br/>Analyzes JSON structure<br/>Infers types]
+    
+    Step4 --> Step5[Step 5: Detect Public URL<br/>CNAME → custom domain<br/>wrangler.toml → Cloudflare Pages<br/>docs/ → GitHub Pages]
+    
+    Step5 --> Step6[Step 6: Build RouteManifest<br/>method: GET, path: /data/chords.json<br/>public_url: https://...<br/>confidence: 0.95]
+    
+    Step6 --> Output[RouteManifest → Ai → Tests]
 ```
 
 ### apisnap CLI modes and commands
 
+```mermaid
+flowchart TB
+    CLI[apisnap] --> Config[apisnap config]
+    CLI --> Scan[apisnap scan]
+    CLI --> List[apisnap list]
+    CLI --> Version[apisnap version]
+
+    subgraph Config["apisnap config"]
+        C1[First-time setup]
+        C2[Prompts for Cerebras API key]
+        C3[Stores at: ~/.apisnap/config.toml]
+        C1 --> C2 --> C3
+    end
+
+    subgraph Scan["apisnap scan [PATH] [OPTIONS]"]
+        S1[Main command - All input modes]
+        S2[--url: Remote URL]
+        S2 --> S2a[GitHub repo]
+        S2 --> S2b[OpenAPI JSON]
+        S2 --> S2c[Deployed URL]
+        S3[--format: pytest/jest/mocha/vitest/...]
+        S4[--output: Output directory]
+        S5[--dry-run: Show routes without generating]
+        S6[--verbose: Detailed progress]
+        S1 --> S2 & S3 & S4 & S5 & S6
+    end
+
+    subgraph List["apisnap list [PATH]"]
+        L1[Show discovered routes<br/>in pretty-printed table]
+    end
+
+    subgraph Version["apisnap version"]
+        V1[Show version information]
+    end
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                          APISNAP CLI COMMANDS                               │
@@ -324,104 +250,66 @@ apisnap scan --url https://github.com/user/repo --dry-run
 
 ### AI test generation pipeline
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                     AI TEST GENERATION PIPELINE                            │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-                              RouteManifest
-                                   │
-                                   ▼
-                    ┌──────────────────────────────┐
-                    │   Confidence Check           │
-                    │                              │
-                    │   confidence >= 0.8?         │
-                    │         │                   │
-                    │    Yes  │  No               │
-                    │         ▼                   │
-                    │   ┌─────────────┐           │
-                    │   │ Pass 1:     │           │
-                    │   │ Schema      │           │
-                    │   │ Refinement  │           │
-                    │   └──────┬──────┘           │
-                    │          │                  │
-                    └──────────┼──────────────────┘
-                               │
-                               ▼
-                    ┌──────────────────────────────┐
-                    │   Pass 2: Test Generation   │
-                    │                              │
-                    │   Build prompt with:        │
-                    │   - Method, Path, URL       │
-                    │   - Auth requirements       │
-                    │   - Response schema         │
-                    │   - Source type             │
-                    │   - Framework target        │
-                    └──────────┬───────────────────┘
-                               │
-                               ▼
-                    ┌──────────────────────────────┐
-                    │   Cerebras AI API            │
-                    │   Model: qwen-3-235b-...     │
-                    │                              │
-                    │   Prompt: "Generate tests   │
-                    │   for category: happy path,  │
-                    │   auth failure, schema..."   │
-                    └──────────┬────────────────────┘
-                               │
-                               ▼
-                    ┌──────────────────────────────┐
-                    │   Framework Writer           │
-                    │                              │
-                    │   pytest / unittest / jest   │
-                    │   mocha / vitest / rspec     │
-                    │   restassured / httpx        │
-                    └──────────┬────────────────────┘
-                               │
-                               ▼
-                    ┌──────────────────────────────┐
-                    │   Test Files                 │
-                    │                              │
-                    │   test_api_users.py          │
-                    │   test_api_products.py       │
-                    │   ...                         │
-                    └──────────────────────────────┘
+```mermaid
+flowchart TB
+    Input[RouteManifest] --> Check{Confidence Check<br/>confidence >= 0.8?}
+    
+    Check -->|Yes| Pass1[Pass 1: Schema Refinement]
+    Check -->|No| LowConf[Use with lower confidence]
+    
+    Pass1 --> Pass2[Pass 2: Test Generation]
+    LowConf --> Pass2
+    
+    Pass2 --> BuildPrompt[Build prompt with:<br/>- Method, Path, URL<br/>- Auth requirements<br/>- Response schema<br/>- Source type<br/>- Framework target]
+    
+    BuildPrompt --> Ai[Cerebras Ai Api<br/>Model: gpt-oss-120b]
+    
+    Ai --> Prompt[Prompt: "Generate tests<br/>for category: happy path,<br/>auth failure, schema..."]
+    
+    Prompt --> Writer[Framework Writer<br/>pytest / unittest / jest<br/>mocha / vitest / rspec<br/>restassured / httpx]
+    
+    Writer --> Output[Test Files<br/>test_api_users.py<br/>test_api_products.py<br/>...]
 ```
 
 ### Internal route manifest structure
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       ROUTE MANIFEST STRUCTURE                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-RouteManifest
-├── routes: List[Route]
-│   └── Route
-│       ├── method: str                    "GET" | "POST" | "PUT" | ...
-│       ├── path: str                      "/api/v1/users/{id}"
-│       ├── params: List[Param]
-│       │   └── Param
-│       │       ├── name: str
-│       │       ├── location: str          "path" | "query" | "header"
-│       │       ├── type: str              "string" | "integer" | ...
-│       │       ├── required: bool
-│       │       └── description: Optional[str]
-│       ├── body_schema: dict              JSON Schema for request body
-│       ├── response_schema: dict          JSON Schema for response
-│       ├── auth_required: bool
-│       ├── auth_type: Optional[str]       "bearer" | "api_key" | ...
-│       ├── tags: List[str]
-│       ├── summary: Optional[str]
-│       ├── source: str                    "openapi" | "scanned" | "github-data-repo"
-│       ├── confidence: float              0.0 - 1.0
-│       ├── refresh_schedule: Optional[str]  cron expression
-│       └── public_url: Optional[str]      full URL for GitHub-as-database
-├── base_url: Optional[str]
-├── framework: Optional[str]               "fastapi" | "express" | "spring" | ...
-├── project_name: Optional[str]
-├── source_mode: str                       "source" | "openapi" | "github" | ...
-└── detected_at: str                        original input path/URL
+```mermaid
+classDiagram
+    class RouteManifest {
+        +List~Route~ routes
+        +Optional~str~ base_url
+        +Optional~str~ framework
+        +Optional~str~ project_name
+        +str source_mode
+        +str detected_at
+    }
+    
+    class Route {
+        +str method
+        +str path
+        +List~Param~ params
+        +dict body_schema
+        +dict response_schema
+        +bool auth_required
+        +Optional~str~ auth_type
+        +List~str~ tags
+        +Optional~str~ summary
+        +str source
+        +float confidence
+        +Optional~str~ refresh_schedule
+        +Optional~str~ public_url
+    }
+    
+    class Param {
+        +str name
+        +str location
+        +str type
+        +bool required
+        +Optional~str~ description
+    }
+    
+    RouteManifest --> Route : routes
+    Route --> Param : params
 ```
 
 ---
@@ -516,7 +404,7 @@ Config file location: `~/.apisnap/config.toml`
 ```toml
 [cerebras]
 api_key = "sk-xxxx"                    # Your Cerebras API key
-model = "qwen-3-235b-a22b-instruct-2507"  # AI model to use
+model = "gpt-oss-120b"                 # AI model to use
 
 [defaults]
 output_dir = "./tests"                  # Default output directory
