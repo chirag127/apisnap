@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apisnap"
+version = "0.1.0"
+description = "AI-powered API test case generator. Point it at any codebase, URL, or GitHub repo and get instant runnable tests."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+  { name = "Chirag Singhal", email = "whyiswhen@gmail.com" }
+]
+keywords = ["api", "testing", "ai", "test-generation", "openapi", "cli", "cerebras"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "typer>=0.12.0",
+  "rich>=13.0.0",
+  "httpx>=0.27.0",
+  "toml>=0.10.2",
+  "pyyaml>=6.0",
+  "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0.0",
+  "pytest-asyncio>=0.23.0",
+  "pytest-mock>=3.12.0",
+]
+
+[project.scripts]
+apisnap = "apisnap.__main__:app"
+
+[project.urls]
+Homepage = "https://github.com/chirag127/apisnap"
+Repository = "https://github.com/chirag127/apisnap"
+Issues = "https://github.com/chirag127/apisnap/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/apisnap"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

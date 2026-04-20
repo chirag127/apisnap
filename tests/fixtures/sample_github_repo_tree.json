@@ -1,0 +1,48 @@
+{
+  "sha": "abc123",
+  "tree": [
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "size": 1234,
+      "url": "https://api.github.com/repos/user/data-repo/contents/README.md"
+    },
+    {
+      "path": ".github/workflows/update-data.yml",
+      "mode": "100644",
+      "type": "blob",
+      "size": 567,
+      "url": "https://api.github.com/repos/user/data-repo/contents/.github/workflows/update-data.yml"
+    },
+    {
+      "path": "data/users.json",
+      "mode": "100644",
+      "type": "blob",
+      "size": 890,
+      "url": "https://api.github.com/repos/user/data-repo/contents/data/users.json"
+    },
+    {
+      "path": "data/products.json",
+      "mode": "100644",
+      "type": "blob",
+      "size": 1234,
+      "url": "https://api.github.com/repos/user/data-repo/contents/data/products.json"
+    },
+    {
+      "path": "public/chords.json",
+      "mode": "100644",
+      "type": "blob",
+      "size": 5678,
+      "url": "https://api.github.com/repos/user/data-repo/contents/public/chords.json"
+    },
+    {
+      "path": "CNAME",
+      "mode": "100644",
+      "type": "blob",
+      "size": 15,
+      "url": "https://api.github.com/repos/user/data-repo/contents/CNAME"
+    }
+  ],
+  "truncated": false
+}
