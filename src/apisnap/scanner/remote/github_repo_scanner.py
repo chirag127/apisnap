@@ -26,6 +26,7 @@ JSON_FILE_PATTERNS = [
     "assets/",
     "_data/",
     "json/",
+    "",  # root directory
 ]
 
 GENERATOR_PATTERNS = [
@@ -270,9 +271,13 @@ class GitHubRepoScanner(BaseScanner):
             if not path.endswith(".json"):
                 continue
 
-            # Check if it's in a data directory
+            # Check if it's in a data directory or root
             for pattern in JSON_FILE_PATTERNS:
-                if pattern in path:
+                if pattern == "":
+                    # Root directory - only include if no slash (root files only)
+                    if "/" not in path:
+                        json_files.append(path)
+                elif pattern in path:
                     json_files.append(path)
                     break
 

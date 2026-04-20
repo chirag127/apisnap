@@ -81,7 +81,7 @@ apisnap scan --url https://github.com/user/repo --dry-run
 
 ```mermaid
 flowchart TB
-    subgraph Inputs["Input Modes"]
+    subgraph Inputs[Input Modes]
         M1[Local Code Scan]
         M2[OpenAPI URL]
         M3[JSON URL]
@@ -100,7 +100,7 @@ flowchart TB
     Manifest --> AI[Ai Engine Cerebras]
     AI --> Writers[Test Writers]
 
-    subgraph Writers["Test Writers"]
+    subgraph Writers[Test Writers]
         W1[pytest]
         W2[unittest]
         W3[jest]
@@ -112,14 +112,13 @@ flowchart TB
     end
 
     Writers --> Output[Output Files]
-    Output >|./tests/*.|Output
 ```
 
 ### The GitHub-as-database serverless API pattern
 
 ```mermaid
 flowchart LR
-    External[External API<br/>weather, prices, sports] -->|HTTP Request| Workflow[GitHub Actions<br/>schedule: cron]
+    External[External API<br/>weather, prices, sports] -->|HTTP Request| Workflow[GitHub Actions: cron]
 
     Workflow -->|Fetch & Transform| Commit[Commit JSON files]
 
@@ -127,14 +126,14 @@ flowchart LR
 
     Repo -->|Serve| Pages[Public JSON APIs]
 
-    subgraph Pages["Hosting Options"]
+    subgraph Pages[Hosting Options]
         direction TB
         GH[GitHub Pages<br/>user.github.io/repo]
         CF[Cloudflare Pages<br/>repo.pages.dev]
         Custom[Custom Domain<br/>api.example.com]
     end
 
-    GH --> URLs[Public JSON API URLs<br/>https://user.github.io/repo/data/chords.json<br/>https://repo.pages.dev/data/prices.json<br/>https://api.example.com/data/items.json]
+    GH --> URLs[Public JSON API URLs]
     CF --> URLs
     Custom --> URLs
 ```
@@ -143,23 +142,23 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    Input[Input: https://github.com/user/guitar-chords-repo] --> Step1[Step 1: Fetch Repo Tree<br/>GET /repos/{owner}/{repo}/git/trees?recursive=1]
+    Input[Input: GitHub Repo URL] --> Step1[Step 1: Fetch Repo Tree<br/>API: /repos/{owner}/{repo}/git/trees]
 
-    Step1 --> Step2[Step 2: Scan Generator Scripts<br/>.github/workflows/*.yml → parse<br/>scripts/*.py → extract cron, fetch URLs]
+    Step1 --> Step2[Step 2: Scan Generator Scripts<br/>.github/workflows/*.yml<br/>scripts/*.py]
 
     Step2 --> Step2a[workflow: cron: 0 */6<br/>output: data/*.json]
     Step2 --> Step2b[scripts: fetch_chords.py<br/>from external API]
 
-    Step2a --> Step3[Step 3: Find JSON Data Files<br/>data/*.json, public/*.json<br/>api/*.json, output/*.json]
+    Step2a --> Step3[Step 3: Find JSON Data Files<br/>data/*.json, public/*.json]
     Step2b --> Step3
 
-    Step3 --> Step4[Step 4: Infer Schema<br/>Analyzes JSON structure<br/>Infers types]
+    Step3 --> Step4[Step 4: Infer Schema<br/>Analyze JSON structure]
 
-    Step4 --> Step5[Step 5: Detect Public URL<br/>CNAME → custom domain<br/>wrangler.toml → Cloudflare Pages<br/>docs/ → GitHub Pages]
+    Step4 --> Step5[Step 5: Detect Public URL<br/>CNAME, wrangler.toml, docs/]
 
-    Step5 --> Step6[Step 6: Build RouteManifest<br/>method: GET, path: /data/chords.json<br/>public_url: https://...<br/>confidence: 0.95]
+    Step5 --> Step6[Step 6: Build RouteManifest<br/>method, path, public_url]
 
-    Step6 --> Output[RouteManifest → Ai → Tests]
+    Step6 --> Output[RouteManifest to AI to Tests]
 ```
 
 ### apisnap CLI modes and commands
@@ -171,31 +170,28 @@ flowchart TB
     CLI --> List[apisnap list]
     CLI --> Version[apisnap version]
 
-    subgraph Config["apisnap config"]
+    subgraph Config[apisnap config]
         C1[First-time setup]
         C2[Prompts for Cerebras API key]
         C3[Stores at: ~/.apisnap/config.toml]
         C1 --> C2 --> C3
     end
 
-    subgraph Scan["apisnap scan [PATH] [OPTIONS]"]
-        S1[Main command - All input modes]
+    subgraph Scan[apisnap scan OPTIONS]
+        S1[Main command]
         S2[--url: Remote URL]
-        S2 --> S2a[GitHub repo]
-        S2 --> S2b[OpenAPI JSON]
-        S2 --> S2c[Deployed URL]
-        S3[--format: pytest/jest/mocha/vitest/...]
+        S3[--format: pytest/jest/mocha]
         S4[--output: Output directory]
-        S5[--dry-run: Show routes without generating]
+        S5[--dry-run: Show routes only]
         S6[--verbose: Detailed progress]
         S1 --> S2 & S3 & S4 & S5 & S6
     end
 
-    subgraph List["apisnap list [PATH]"]
-        L1[Show discovered routes<br/>in pretty-printed table]
+    subgraph List[apisnap list]
+        L1[Show discovered routes]
     end
 
-    subgraph Version["apisnap version"]
+    subgraph Version[apisnap version]
         V1[Show version information]
     end
 ```
@@ -260,15 +256,15 @@ flowchart TB
     Pass1 --> Pass2[Pass 2: Test Generation]
     LowConf --> Pass2
 
-    Pass2 --> BuildPrompt[Build prompt with:<br/>- Method, Path, URL<br/>- Auth requirements<br/>- Response schema<br/>- Source type<br/>- Framework target]
+    Pass2 --> BuildPrompt[Build prompt with: Method, Path, URL, Auth, Schema, Framework]
 
-    BuildPrompt --> Ai[Cerebras Ai Api<br/>Model: qwen-3-235b-a22b-instruct-2507]
+    BuildPrompt --> Ai[Cerebras AI API<br/>Model: qwen-3-235b-a22b]
 
-    Ai --> Prompt[Prompt: "Generate tests<br/>for category: happy path,<br/>auth failure, schema..."]
+    Ai --> Prompt[Prompt: "Generate tests for happy path, auth failure, schema validation"]
 
-    Prompt --> Writer[Framework Writer<br/>pytest / unittest / jest<br/>mocha / vitest / rspec<br/>restassured / httpx]
+    Prompt --> Writer[Framework Writer<br/>pytest, unittest, jest, mocha, vitest]
 
-    Writer --> Output[Test Files<br/>test_api_users.py<br/>test_api_products.py<br/>...]
+    Writer --> Output[Test Files: test_api_*.py]
 ```
 
 ### Internal route manifest structure
@@ -276,10 +272,10 @@ flowchart TB
 ```mermaid
 classDiagram
     class RouteManifest {
-        +List~Route~ routes
-        +Optional~str~ base_url
-        +Optional~str~ framework
-        +Optional~str~ project_name
+        +list routes
+        +str base_url
+        +str framework
+        +str project_name
         +str source_mode
         +str detected_at
     }
@@ -287,17 +283,15 @@ classDiagram
     class Route {
         +str method
         +str path
-        +List~Param~ params
+        +list params
         +dict body_schema
         +dict response_schema
         +bool auth_required
-        +Optional~str~ auth_type
-        +List~str~ tags
-        +Optional~str~ summary
+        +str summary
         +str source
         +float confidence
-        +Optional~str~ refresh_schedule
-        +Optional~str~ public_url
+        +str refresh_schedule
+        +str public_url
     }
 
     class Param {
@@ -305,7 +299,7 @@ classDiagram
         +str location
         +str type
         +bool required
-        +Optional~str~ description
+        +str description
     }
 
     RouteManifest --> Route : routes

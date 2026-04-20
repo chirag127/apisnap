@@ -1,11 +1,15 @@
 """CLI interface for apisnap."""
 
 import sys
+import os
 from pathlib import Path
 from typing import Optional
 
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 import typer
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from apisnap import __version__
 from apisnap import config
@@ -28,7 +32,11 @@ app = typer.Typer(
     help="AI-powered API test case generator",
     add_completion=False,
 )
-console = Console()
+
+try:
+    console = Console(force_terminal=None, legacy_windows=False)
+except Exception:
+    console = Console()
 
 
 @app.command()
