@@ -17,7 +17,7 @@ class FlaskScanner(BaseScanner):
         directory = Path(path)
         if not directory.is_dir():
             directory = directory.parent
-        
+
         for pattern in ["main.py", "app.py", "application.py"]:
             if (directory / pattern).exists():
                 try:
@@ -32,13 +32,12 @@ class FlaskScanner(BaseScanner):
         """Scan for Flask routes."""
         routes = []
         directory = Path(path)
-        
+
         if not directory.is_dir():
             directory = directory.parent
-        
-        # Find Python files to scan
+
         python_files = list(directory.rglob("*.py"))
-        
+
         for py_file in python_files:
             if self._should_skip(py_file):
                 continue
@@ -48,7 +47,7 @@ class FlaskScanner(BaseScanner):
                 routes.extend(file_routes)
             except Exception:
                 continue
-        
+
         return RouteManifest(
             routes=routes,
             framework="flask",
@@ -68,13 +67,13 @@ class FlaskScanner(BaseScanner):
     def _extract_routes(self, content: str, filename: str) -> list[Route]:
         """Extract routes from file content."""
         routes = []
-        
+
         for line in content.split("\n"):
             stripped = line.strip()
-            
+
             for method in METHODS:
-                # Match @app.route with method
-                pattern = rf"@(?:app|blueprint)\.route\(['\"](.+?)['\"]\s*,\s*methods\s*=\s*\[['\\"]({method})['\"]\])"
+                # Match @app.route with methods=[...]
+                pattern = rf'@(?:app|blueprint)\.route\(["\'](.+?)["\']\s*,\s*methods\s*=\s*\[.+?{method}.+?\]'
                 match = re.match(pattern, stripped)
                 if match:
                     path = match.group(1)
@@ -84,44 +83,41 @@ class FlaskScanner(BaseScanner):
                         source="scanned",
                         confidence=0.9,
                     )
-                    
-                    # Extract path parameters
                     params = self._extract_params(path)
                     route.params = params
                     routes.append(route)
-                
-                # Match @app.method patterns
-                pattern = rf"@(?:app|blueprint)\.{method.lower()}\(['\"])(.+?)\1"
+
+                # Match @app.get, @app.post etc.
+                pattern = rf'@(?:app|blueprint)\.{method.lower()}\(["\'](.+?)["\']'
                 match = re.match(pattern, stripped)
                 if match:
-                    path = match.group(2)
+                    path = match.group(1)
                     route = Route(
                         method=method,
                         path=path,
                         source="scanned",
                         confidence=0.9,
                     )
-                    
-                    # Extract path parameters
                     params = self._extract_params(path)
                     route.params = params
                     routes.append(route)
-        
+
         return routes
 
     def _extract_params(self, path: str) -> list[Param]:
         """Extract parameters from path."""
         params = []
-        
-        # Match <converter:name> or <name> patterns
+
         param_pattern = r"<(?:\w+:)?(\w+)>"
         for match in re.finditer(param_pattern, path):
             param_name = match.group(1)
-            params.append(Param(
-                name=param_name,
-                location="path",
-                type="string",
-                required=True,
-            ))
-        
+            params.append(
+                Param(
+                    name=param_name,
+                    location="path",
+                    type="string",
+                    required=True,
+                )
+            )
+
         return params

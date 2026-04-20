@@ -30,7 +30,7 @@ def _default_config() -> dict:
     return {
         "cerebras": {
             "api_key": "",
-            "model": "qwen-3-235b-a22b-instruct-2507",
+            "model": "gpt-oss-120b",
         },
         "defaults": {
             "output_dir": "./tests",
@@ -64,7 +64,7 @@ def set_api_key(key: str) -> None:
 def get_model() -> str:
     """Get Cerebras model name."""
     config = load_config()
-    return config.get("cerebras", {}).get("model", "qwen-3-235b-a22b-instruct-2507")
+    return config.get("cerebras", {}).get("model", "gpt-oss-120b")
 
 
 def set_model(model: str) -> None:
@@ -115,7 +115,7 @@ def show_config() -> str:
     lines = [
         "[cerebras]",
         f'api_key = "{masked_key}"',
-        f'model = "{config.get("cerebras", {}).get("model", "qwen-3-235b-a22b-instruct-2507")}"',
+        f'model = "{config.get("cerebras", {}).get("model", "gpt-oss-120b")}"',
         "",
         "[defaults]",
         f'output_dir = "{config.get("defaults", {}).get("output_dir", "./tests")}"',

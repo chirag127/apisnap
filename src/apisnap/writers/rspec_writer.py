@@ -1,5 +1,6 @@
 """RSpec writer."""
 
+import json
 from pathlib import Path
 
 from apisnap.schema import RouteManifest, Route
@@ -37,6 +38,8 @@ class RSpecWriter(BaseWriter):
     def _generate_route_test(self, route: Route, manifest: RouteManifest) -> str:
         """Generate test for a route."""
         base_url = manifest.base_url or "http://localhost"
+        props = list(route.response_schema.get("properties", {}).keys())
+        props_json = json.dumps(props)
 
         code = f'''require "rspec"
 require "httparty"
@@ -54,7 +57,7 @@ RSpec.describe "{route.path}" do
     response = HTTParty.{route.method.lower()}(url)
     if response.code == 200
       data = JSON.parse(response.body)
-      expected_fields = {list(route.response_schema.get("properties", {{}}).keys())}
+      expected_fields = {props_json}
       expected_fields.each do |field|
         expect(data).to have_key(field)
       end

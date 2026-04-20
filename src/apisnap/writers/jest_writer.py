@@ -1,8 +1,7 @@
 """Jest writer."""
 
-import os
-from pathlib import Path
 import json
+from pathlib import Path
 
 from apisnap.schema import RouteManifest, Route
 from apisnap.writers.base_writer import BaseWriter
@@ -18,7 +17,6 @@ class JestWriter(BaseWriter):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
 
-        # Write tests for each route
         for i, route in enumerate(manifest.routes):
             test_code = self._generate_route_test(route, manifest)
             filename = self._get_filename(route, i)
@@ -40,8 +38,11 @@ class JestWriter(BaseWriter):
     def _generate_route_test(self, route: Route, manifest: RouteManifest) -> str:
         """Generate test for a route."""
         base_url = manifest.base_url or "http://localhost"
+        props = list(route.response_schema.get("properties", {}).keys())
+        props_json = json.dumps(props)
+        props_schema = json.dumps(route.response_schema.get("properties", {}))
 
-        code = f'''/** @{{jest}} */
+        code = f'''/** @jest */
 const axios = require("axios");
 
 describe("{route.path}", () => {{
@@ -51,14 +52,14 @@ describe("{route.path}", () => {{
   test("happy path - valid request, assert 200", async () => {{
     const response = await axios.{route.method.lower()}(url);
     expect([200, 201]).toContain(response.status);
-    expect(response.headers["content-type"]).toMatch(/application\\/json/);
+    expect(response.headers["content-type"]).toMatch(/application\\\\/json/);
   }});
 
   test("schema field presence validation", async () => {{
     const response = await axios.{route.method.lower()}(url);
     if (response.status === 200) {{
       const data = response.data;
-      const expectedFields = {json.dumps(list(route.response_schema.get("properties", {{}}).keys()))};
+      const expectedFields = {props_json};
       expectedFields.forEach(field => {{
         expect(data).toHaveProperty(field);
       }});
@@ -69,7 +70,7 @@ describe("{route.path}", () => {{
     const response = await axios.{route.method.lower()}(url);
     if (response.status === 200) {{
       const data = response.data;
-      const properties = {json.dumps(route.response_schema.get("properties", {{}}))};
+      const properties = {props_schema};
       Object.entries(properties).forEach(([field, schema]) => {{
         if (data[field] !== undefined) {{
           const expectedType = schema.type;
@@ -100,7 +101,7 @@ describe("{route.path}", () => {{
   test("content-type header check", async () => {{
     const response = await axios.{route.method.lower()}(url);
     if (response.status === 200) {{
-      expect(response.headers["content-type"]).toMatch(/application\\/json/);
+      expect(response.headers["content-type"]).toMatch(/application\\\\/json/);
     }}
   }});
 
@@ -126,8 +127,3 @@ describe("{route.path}", () => {{
         if not name:
             name = f"route-{index}"
         return f"test-{name}.test.js"
-
-
-def list(lst):
-    """Helper to convert dict_keys to list."""
-    return list(lst)

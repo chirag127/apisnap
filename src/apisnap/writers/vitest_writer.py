@@ -1,5 +1,6 @@
 """Vitest writer."""
 
+import json
 from pathlib import Path
 
 from apisnap.schema import RouteManifest, Route
@@ -37,6 +38,8 @@ class VitestWriter(BaseWriter):
     def _generate_route_test(self, route: Route, manifest: RouteManifest) -> str:
         """Generate test for a route."""
         base_url = manifest.base_url or "http://localhost"
+        props = list(route.response_schema.get("properties", {}).keys())
+        props_json = json.dumps(props)
 
         code = f'''import {{ describe, it, expect }} from "vitest";
 import axios from "axios";
@@ -54,7 +57,7 @@ describe("{route.path}", () => {{
     const response = await axios.{route.method.lower()}(url);
     if (response.status === 200) {{
       const data = response.data;
-      const expectedFields = {list(route.response_schema.get("properties", {{}}).keys())};
+      const expectedFields = {props_json};
       expectedFields.forEach(field => {{
         expect(data).toHaveProperty(field);
       }});
@@ -76,7 +79,7 @@ describe("{route.path}", () => {{
 
   it("content-type header check", async () => {{
     const response = await axios.{route.method.lower()}(url);
-    expect(response.headers["content-type"]).toMatch(/application\\/json/);
+    expect(response.headers["content-type"]).toMatch(/application\\\\/json/);
   }});
 
   it("404 for invalid variation", async () => {{

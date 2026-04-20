@@ -9,44 +9,44 @@ class SchemaInferrer:
 
     def infer(self, data: Any) -> dict:
         """Infer JSON schema from data.
-        
+
         Args:
             data: JSON data (dict, list, or primitive)
-            
+
         Returns:
             JSON schema compatible dict
         """
         if data is None:
             return {"type": "null"}
-        
+
         if isinstance(data, dict):
             return self._infer_object(data)
-        
+
         if isinstance(data, list):
             return self._infer_array(data)
-        
+
         return self._infer_primitive(data)
 
     def _infer_object(self, obj: dict) -> dict:
         """Infer schema for a dict."""
         properties = {}
         required = []
-        
+
         for key, value in obj.items():
             properties[key] = self.infer(value)
-            
+
             # Check if null values exist
             if value is not None:
                 required.append(key)
-        
+
         result = {
             "type": "object",
             "properties": properties,
         }
-        
+
         if required:
             result["required"] = required
-        
+
         return result
 
     def _infer_array(self, arr: list) -> dict:
@@ -56,20 +56,20 @@ class SchemaInferrer:
                 "type": "array",
                 "items": {},
             }
-        
+
         # Infer from first few items
         item_schemas = []
         max_items = min(10, len(arr))
-        
+
         for i in range(max_items):
             item_schemas.append(self.infer(arr[i]))
-        
+
         # Merge schemas
         if len(item_schemas) == 1:
             merged = item_schemas[0]
         else:
             merged = self._merge_schemas(item_schemas)
-        
+
         return {
             "type": "array",
             "items": merged,
@@ -83,41 +83,41 @@ class SchemaInferrer:
         """Get JSON type for value."""
         if value is None:
             return "null"
-        
+
         if isinstance(value, bool):
             return "boolean"
-        
+
         if isinstance(value, int):
             return "integer"
-        
+
         if isinstance(value, float):
             return "number"
-        
+
         if isinstance(value, str):
             return "string"
-        
+
         if isinstance(value, list):
             return "array"
-        
+
         if isinstance(value, dict):
             return "object"
-        
+
         return "string"
 
     def _merge_schemas(self, schemas: list[dict]) -> dict:
         """Merge multiple schemas into one.
-        
+
         Union of fields, types become anyOf if different.
         """
         if not schemas:
             return {}
-        
+
         if len(schemas) == 1:
             return schemas[0]
-        
+
         # Check if all schemas are the same type
         types = set(s.get("type", "string") for s in schemas)
-        
+
         if len(types) == 1:
             # All same type, check structure for objects
             first = schemas[0]
@@ -127,7 +127,7 @@ class SchemaInferrer:
                 return self._merge_array_schemas(schemas)
             else:
                 return first
-        
+
         # Different types - use anyOf
         return {
             "anyOf": schemas,
@@ -137,43 +137,45 @@ class SchemaInferrer:
         """Merge object schemas."""
         all_properties = {}
         all_required = set()
-        
+
         for schema in schemas:
             properties = schema.get("properties", {})
             for key, prop in properties.items():
                 if key in all_properties:
                     # Merge property schemas
-                    all_properties[key] = self._merge_schemas([all_properties[key], prop)
+                    all_properties[key] = self._merge_schemas(
+                        [all_properties[key], prop]
+                    )
                 else:
                     all_properties[key] = prop
-            
+
             required = schema.get("required", [])
             all_required.update(required)
-        
+
         result = {
             "type": "object",
             "properties": all_properties,
         }
-        
+
         if all_required:
             result["required"] = list(all_required)
-        
+
         return result
 
     def _merge_array_schemas(self, schemas: list[dict]) -> dict:
         """Merge array schemas."""
         items_list = []
-        
+
         for schema in schemas:
             items = schema.get("items", {})
             if items:
                 items_list.append(items)
-        
+
         if not items_list:
             return {}
-        
+
         merged = self._merge_schemas(items_list)
-        
+
         return {
             "type": "array",
             "items": merged,
@@ -183,6 +185,6 @@ class SchemaInferrer:
         """Merge two schemas."""
         if not existing:
             return new
-        
+
         all_schemas = existing + [new]
         return self._merge_schemas(all_schemas)
