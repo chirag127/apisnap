@@ -41,14 +41,14 @@ flowchart TB
         I4[JSON Data Files]
         I5[Deployed API URL]
     end
-    
+
     subgraph Process[AI Processing]
         P1[Auto-Discovery]
         P2[Schema Inference]
         P3[Route Manifest]
         P4[Cerebras AI]
     end
-    
+
     subgraph Output[Output Formats]
         O1[pytest]
         O2[unittest]
@@ -57,13 +57,13 @@ flowchart TB
         O5[mocha]
         O6[vitest]
     end
-    
+
     I1 --> P1
     I2 --> P1
     I3 --> P1
     I4 --> P1
     I5 --> P1
-    
+
     P1 --> P2
     P2 --> P3
     P3 --> P4
@@ -84,13 +84,13 @@ flowchart TB
         C3[apisnap list]
         C4[apisnap version]
     end
-    
+
     subgraph Core[Core Layer]
         D[Detector]
         S1[Source Scanners]
         S2[Remote Scanners]
     end
-    
+
     subgraph Scanner[Scanners]
         SF1[FastAPI Scanner]
         SF2[Flask Scanner]
@@ -99,18 +99,18 @@ flowchart TB
         SF5[Spring Scanner]
         SF6[Gin Scanner]
         SF7[Rails Scanner]
-        
+
         SR1[GitHub Repo Scanner]
         SR2[OpenAPI Scanner]
         SR3[JSON Scanner]
         SR4[Crawl Scanner]
     end
-    
+
     subgraph AI[AI Layer]
         A1[Cerebras Client]
         A2[Prompt Templates]
     end
-    
+
     subgraph Writer[Test Writers]
         W1[pytest Writer]
         W2[unittest Writer]
@@ -121,7 +121,7 @@ flowchart TB
         W7[restassured Writer]
         W8[rspec Writer]
     end
-    
+
     CLI --> Core
     D --> S1
     D --> S2
@@ -135,30 +135,30 @@ flowchart TB
 ```mermaid
 flowchart TB
     Start[Input] --> Detect{Input Type Detection}
-    
+
     Detect -->|GitHub URL| GH[GitHub Repo Scanner]
     Detect -->|OpenAPI| OA[OpenAPI Scanner]
     Detect -->|JSON URL| JS[JSON Scanner]
     Detect -->|Local Code| SC[Source Code Scanner]
-    
+
     GH --> FT[Fetch Repo Tree]
     FT --> SW[Scan Workflows]
     SW --> JF[Find JSON Files]
     JF --> SI[Schema Inference]
     SI --> PB[Build RouteManifest]
-    
+
     OA --> Parse[Parse OpenAPI Spec]
     Parse --> Routes[Extract Routes]
     Routes --> Manifest[Build RouteManifest]
-    
+
     JS --> FetchJSON[Fetch JSON]
     FetchJSON --> Infer[Infer Schema]
     Infer --> Build[Build RouteManifest]
-    
+
     SC --> DetectF[Detect Framework]
     DetectF --> ParseRoutes[Parse Routes]
     ParseRoutes --> Create[Create RouteManifest]
-    
+
     PB --> Output1[RouteManifest]
     Manifest --> Output1
     Build --> Output1
@@ -217,19 +217,7 @@ Before generating tests, you must configure the Cerebras API key.
 apisnap config --api-key YOUR_CEREBRAS_API_KEY
 ```
 
-#### Screenshot Placeholder 1
-
-```markdown
-<!-- 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCREENSHOT: Command execution of "apisnap config-cmd --api-key csk-nmeyf8pc88h8dn9ptrxvhnr38xvrv8925ecf5t89hkn9deff"
-Expected output: "Success: API key saved"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[Insert screenshot here]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--->
-
-```
+![alt text](image.png)
 
 ### Alternative: Interactive Configuration
 
@@ -267,7 +255,7 @@ flowchart LR
         Dir[~/.apisnap/]
         File[config.toml]
     end
-    
+
     Dir --> File
 ```
 
@@ -351,11 +339,14 @@ apisnap version
 ```mermaid
 flowchart TB
     Input[GitHub Repo URL] --> Parse[Parse owner/repo]
-    Parse --> Tree[Fetch Repo Tree<br/>API: /repos/{owner}/{repo}/git/trees]
+    Parse --> Tree[Fetch Repo Tree
+    API: /repos/{owner}/{repo}/git/trees]
     Tree --> Workflows[Scan .github/workflows/]
-    Workflows --> JSON[Find JSON Files<br/>data/, public/, api/]
+    Workflows --> JSON[Find JSON Files
+    data/, public/, api/]
     JSON --> Schema[Infer Schema]
-    Schema --> URL[Detect Public URL<br/>GitHub Pages / Cloudflare Pages]
+    Schema --> URL[Detect Public URL
+    GitHub Pages / Cloudflare Pages]
     URL --> Manifest[Build RouteManifest]
 ```
 
@@ -371,23 +362,7 @@ apisnap scan --url https://github.com/owner/repo
 apisnap scan --url https://github.com/chirag127/fii-dii-tracker
 ```
 
-#### Screenshot Placeholder 2
-
-```markdown
-<!-- 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCREENSHOT: Command execution of "apisnap scan --url https://github.com/chirag127/fii-dii-tracker"
-Expected output:
-⠴ Scanning for routes...
-Generating Tests
-================
-⠋ Generating tests...
-Success: Generated 2 test files in ./tests/
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[Insert screenshot here]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--->
-```
+![alt text](image-1.png)
 
 ### Mode 2: Local Source Code
 
@@ -613,59 +588,59 @@ flowchart TB
     subgraph User[User Input]
         Cmd[CLI Command]
     end
-    
+
     subgraph CLI[CLI Layer]
         Parse[Argument Parser]
         Config[Config Manager]
     end
-    
+
     subgraph Scan[Scanning Layer]
         Detect[Auto-Detector]
-        
+
         subgraph Source[Source Scanners]
             Fast[FastAPI]
             Flask[Flask]
             Express[Express]
             Django[Django]
         end
-        
+
         subgraph Remote[Remote Scanners]
             GH[GitHub Repo]
             OA[OpenAPI]
             JSON[JSON]
         end
     end
-    
+
     subgraph AI[AI Processing]
         Client[Cerebras Client]
         Refine[Schema Refinement]
     end
-    
+
     subgraph Write[Test Generation]
         Py[pytest]
         Js[jest]
         Mo[mocha]
         Vi[vitest]
     end
-    
+
     subgraph Output[Output]
         Tests[Test Files]
         Logs[Logs]
     end
-    
+
     Cmd --> Parse
     Parse --> Config
     Config --> Detect
-    
+
     Detect --> Source
     Detect --> Remote
-    
+
     Source --> Client
     Remote --> Client
-    
+
     Client --> Refine
     Refine --> Write
-    
+
     Write --> Tests
     Write --> Logs
 ```
@@ -675,22 +650,22 @@ flowchart TB
 ```mermaid
 flowchart LR
     External[External API] -->|HTTP Request| Workflow[GitHub Actions]
-    
+
     Workflow -->|Cron Schedule| Fetch[Fetch Data]
     Fetch -->|Transform| Process[Process Data]
     Process -->|Write JSON| Commit[Git Commit]
-    
+
     Commit -->|Push| Repo[GitHub Repository]
-    
+
     Repo -->|Serve| Hosting[Hosting]
-    
+
     subgraph Hosting
         direction TB
         GHP[GitHub Pages]
         CFP[Cloudflare Pages]
         Custom[Custom Domain]
     end
-    
+
     GHP --> API[Public JSON URL]
     CFP --> API
     Custom --> API
@@ -701,38 +676,38 @@ flowchart LR
 ```mermaid
 flowchart TB
     In[Input URL] --> Parse[Parse Input]
-    
+
     Parse --> Mode{Mode Detection}
-    
+
     Mode -->|GitHub| GH[GitHub Scanner]
     Mode -->|OpenAPI| OA[OpenAPI Scanner]
     Mode -->|JSON| JS[JSON Scanner]
     Mode -->|Source| SC[Source Scanner]
-    
+
     GH --> Tree[Fetch Tree]
     Tree --> Workflows[Parse Workflows]
     Workflows --> FindJSON[Find JSON Files]
     FindJSON --> Infer[Infer Schema]
     Infer --> DetectURL[Detect Public URL]
     DetectURL --> GHOut[RouteManifest]
-    
+
     OA --> Spec[Parse Spec]
     Spec --> Extract[Extract Routes]
     Extract --> OAOut[RouteManifest]
-    
+
     JS --> FetchData[Fetch JSON]
     FetchData --> JInfer[Infer Schema]
     JInfer --> JSOut[RouteManifest]
-    
+
     SC --> DetectF[Detect Framework]
     DetectF --> ParseRoutes[Parse Routes]
     ParseRoutes --> SCOut[RouteManifest]
-    
+
     GHOut --> Merge[Merge Routes]
     OAOut --> Merge
     JSOut --> Merge
     SCOut --> Merge
-    
+
     Merge --> Out[Final RouteManifest]
 ```
 
@@ -741,29 +716,29 @@ flowchart TB
 ```mermaid
 flowchart TB
     Manifest[RouteManifest] --> Filter{Filter Routes}
-    
+
     Filter -->|High Confidence| Pass1[Pass 1: Refine]
     Filter -->|Low Confidence| Mark[Mark Low Confidence]
-    
+
     Pass1 --> AI[Cerebras API]
     Mark --> AI
-    
+
     AI --> Prompt[Build Prompt]
     Prompt -->|System| Sys[System Message]
     Prompt -->|User| User[User Message]
-    
+
     Sys -->|"Generate API tests"| TestGen[Test Generation]
     User -->|Route Details| TestGen
-    
+
     TestGen --> Writer[Framework Writer]
-    
+
     Writer --> Format{Format Selection}
-    
+
     Format -->|pytest| Py[pytest Writer]
     Format -->|jest| Js[jest Writer]
     Format -->|mocha| Mo[mocha Writer]
     Format -->|vitest| Vi[vitest Writer]
-    
+
     Py --> Out1[test_*.py]
     Js --> Out2[test_*.js]
     Mo --> Out3[test_*.js]
@@ -787,7 +762,7 @@ flowchart TB
         H10[Boundary Cases]
         H11[404 Cases]
     end
-    
+
     subgraph Validation[Validation Types]
         V1[Status Code]
         V2[Response Body]
@@ -795,7 +770,7 @@ flowchart TB
         V4[Schema Structure]
         V5[Field Types]
     end
-    
+
     H1 --> V1
     H2 --> V4
     H3 --> V5
@@ -819,7 +794,7 @@ sequenceDiagram
     participant AI
     participant Writer
     participant Output
-    
+
     User->>CLI: apisnap scan --url URL
     CLI->>Scanner: detect_and_scan(url)
     Scanner->>Scanner: Detect input type
@@ -838,15 +813,15 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     Start[Start] --> Check{Config exists?}
-    
+
     Check -->|No| Prompt[Interactive Prompt]
     Check -->|Yes| Read[Read Config]
-    
+
     Prompt --> Input[User Input]
     Input --> Validate[Validate API Key]
     Validate --> Save[Save to config.toml]
     Save --> Ready[Ready to scan]
-    
+
     Read --> Valid{Valid?}
     Valid -->|Yes| Ready
     Valid -->|No| Error[Show error]
@@ -858,19 +833,19 @@ flowchart TB
 ```mermaid
 flowchart TB
     Error[Error occurs] --> Type{Error Type}
-    
+
     Type -->|No API Key| NK[Show config error]
     NK --> Hint[Hint: Run apisnap config]
-    
+
     Type -->|Network Error| Net[Network error]
     Net --> Retry[Retry logic]
     Retry -->|Success| Continue
     Retry -->|Fail| Fail[Show error message]
-    
+
     Type -->|Parse Error| Parse[Parse error]
     Parse --> Debug[Show debug info]
     Debug --> Exit[Exit with code 1]
-    
+
     Type -->|Auth Error| Auth[API auth error]
     Auth --> CheckKey[Check API key]
 ```
@@ -887,14 +862,14 @@ flowchart TB
 @dataclass
 class RouteManifest:
     """Represents a collection of API routes."""
-    
+
     routes: list[Route] = field(default_factory=list)
     base_url: Optional[str] = None
     framework: Optional[str] = None
     project_name: Optional[str] = None
     source_mode: str = "unknown"
     detected_at: str = ""
-    
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "routes": [r.to_dict() for r in self.routes],
@@ -912,7 +887,7 @@ class RouteManifest:
 @dataclass
 class Route:
     """Represents an API route."""
-    
+
     method: str  # GET, POST, PUT, DELETE, PATCH
     path: str    # /api/v1/users/{id}
     params: list[Param] = field(default_factory=list)
@@ -934,7 +909,7 @@ class Route:
 @dataclass
 class Param:
     """Represents an API parameter."""
-    
+
     name: str
     location: str  # "path", "query", "header", "body"
     type: str       # "string", "integer", "boolean", "object", "array"
@@ -948,43 +923,43 @@ class Param:
 ```python
 class GitHubRepoScanner(BaseScanner):
     """Scanner for GitHub repos that use GitHub as a database."""
-    
+
     GITHUB_API_BASE = "https://api.github.com"
     GITHUB_RAW_BASE = "https://raw.githubusercontent.com"
-    
+
     JSON_FILE_PATTERNS = [
         "data/", "public/", "api/", "dist/",
         "output/", "assets/", "_data/", "json/", ""
     ]
-    
+
     GENERATOR_PATTERNS = [
         ".github/workflows/", "scripts/",
         "fetch_", "update_", "sync_"
     ]
-    
+
     def scan(self, url: str, **kwargs) -> RouteManifest:
         """Scan GitHub repository for JSON data files."""
         # 1. Parse owner/repo
         owner, repo = self._parse_github_url(url)
-        
+
         # 2. Fetch repo tree
         tree = self._fetch_repo_tree(owner, repo)
-        
+
         # 3. Parse workflows
         workflow_info = self._parse_workflows(owner, repo, tree)
-        
+
         # 4. Find JSON files
         json_files = self._find_json_data_files(tree)
-        
+
         # 5. Detect public URL
         base_url = self._detect_public_url(owner, repo, tree)
-        
+
         # 6. Build routes
         routes = []
         for json_path in json_files:
             route = self._build_route(json_path, content, base_url)
             routes.append(route)
-        
+
         return RouteManifest(routes=routes, base_url=base_url, ...)
 ```
 
@@ -993,14 +968,14 @@ class GitHubRepoScanner(BaseScanner):
 ```python
 class CerebrasClient:
     """Client for Cerebras AI API."""
-    
+
     CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
     DEFAULT_MODEL = "qwen-3-235b-a22b-instruct-2507"
-    
+
     def generate_tests(self, route: Route, framework: str) -> str:
         """Generate tests for a route using Cerebras AI."""
         prompt = get_generate_tests_prompt(route, framework)
-        
+
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -1010,7 +985,7 @@ class CerebrasClient:
             temperature=0.2,
             max_tokens=4000,
         )
-        
+
         return response.choices[0].message.content
 ```
 
@@ -1019,17 +994,17 @@ class CerebrasClient:
 ```python
 def get_generate_tests_prompt(route: Route, framework: str) -> str:
     """Generate comprehensive test prompt."""
-    
+
     prompt = f"""Generate complete, runnable test code in {framework}
     for the following API endpoint.
-    
+
     Endpoint details:
     - Method: {route.method}
     - Path: {route.path}
     - Public URL: {route.public_url}
     - Auth required: {route.auth_required}
     - Response schema: {route.response_schema}
-    
+
     Generate tests for ALL categories:
     1. Happy path (200 response)
     2. Schema field presence
@@ -1042,12 +1017,12 @@ def get_generate_tests_prompt(route: Route, framework: str) -> str:
     9. Cache headers
     10. Boundary inputs
     11. 404 variations
-    
+
     Rules:
     - Write complete, runnable code
     - No placeholders, no pseudocode
     - Each test needs clear name"""
-    
+
     return prompt
 ```
 
@@ -1083,12 +1058,12 @@ def get_generate_tests_prompt(route: Route, framework: str) -> str:
 ```mermaid
 flowchart TB
     Input[Source Code] --> Detect[Framework Detection]
-    
+
     Detect --> FastAPI{Contains @app.get?}
     Detect --> Flask{Contains Flask(?}
     Detect --> Express{Contains express?}
     Detect --> Django{Contains settings.py?}
-    
+
     FastAPI --> Out1[fastapi_scanner.py]
     Flask --> Out2[flask_scanner.py]
     Express --> Out3[express_scanner.py]
@@ -1183,11 +1158,11 @@ apisnap scan --url REPO --output ./tests/REPO
 flowchart TB
     Language{Language} --> Python
     Language --> JavaScript
-    
+
     Python --> FrameworkPy{Testing Framework?}
     FrameworkPy --> pytest
     FrameworkPy --> unittest
-    
+
     JavaScript --> FrameworkJs{Testing Framework?}
     FrameworkJs --> jest
     FrameworkJs --> mocha
@@ -1212,16 +1187,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/uv/setup-python@v1
-      
+
       - name: Set API key
         run: apisnap config --api-key ${{ secrets.CEREBRAS_API_KEY }}
-      
+
       - name: Generate tests
         run: apisnap scan --url ${{ github.repository }} --format pytest
-      
+
       - name: Run tests
         run: pytest -v
-      
+
       - name: Commit tests
         if: always()
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -1262,7 +1237,7 @@ apisnap scan --url REPO --no-ai
 # No API key
 Error: No API key configured. Run 'apisnap config' first.
 
-# Network error  
+# Network error
 Error: Failed to scan: Connection refused
 
 # Parse error
@@ -1309,15 +1284,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Generate tests
         run: |
           apisnap config --api-key ${{ secrets.CEREBRAS_API_KEY }}
           apisnap scan --url ${{ github.repository }} --format pytest
-      
+
       - name: Run tests
         run: pytest -v --junitxml=report.xml
-      
+
       - name: Upload results
         uses: actions/upload-artifact@v4
         if: always()
@@ -1384,6 +1359,6 @@ apisnap version                      # Show version
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: April 2026*  
+*Document Version: 1.0*
+*Last Updated: April 2026*
 *Author: apisnap Team*
