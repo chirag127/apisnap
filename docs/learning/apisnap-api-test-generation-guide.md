@@ -249,7 +249,7 @@ Default Output: ./tests
 ### Configuration File Location
 
 ```mermaid
-flowchart LR
+flowchart
     subgraph Config[Configuration Storage]
         Dir[~/.apisnap/]
         File[config.toml]
@@ -1053,7 +1053,7 @@ def get_generate_tests_prompt(route: Route, framework: str) -> str:
 ### Framework Detection
 
 ```mermaid
-flowchart TB
+flowchart
     Input[Source Code] --> Detect[Framework Detection]
 
     Detect --> FastAPI{Contains @app.get?}
@@ -1348,7 +1348,6 @@ apisnap version                      # Show version
 
 ## Additional Resources
 
-- [apisnap GitHub Repository](https://github.com/chirag127/apisnap)
 - [PyPI Package](https://pypi.org/project/apisnap/)
 - [Cerebras AI](https://cerebras.ai/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
@@ -1358,4 +1357,4 @@ apisnap version                      # Show version
 
 *Document Version: 1.0*
 *Last Updated: April 2026*
-*Author: apisnap Team*
+*Author: Chirag*
