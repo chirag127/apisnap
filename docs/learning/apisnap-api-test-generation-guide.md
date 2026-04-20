@@ -1060,7 +1060,7 @@ flowchart TB
     Input[Source Code] --> Detect[Framework Detection]
 
     Detect --> FastAPI{Contains @app.get?}
-    Detect --> Flask{Contains Flask(?}
+    Detect --> Flask{Contains Flask?}
     Detect --> Express{Contains express?}
     Detect --> Django{Contains settings.py?}
 
